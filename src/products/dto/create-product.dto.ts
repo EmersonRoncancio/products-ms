@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsString, Min } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -7,8 +7,8 @@ export class CreateProductDto {
 
   @IsNumber({}, { message: 'Price must be a number' })
   @Type(() => Number)
-  price: string;
+  price: number;
 
-  @IsBoolean()
-  active: boolean;
+  // @IsBoolean()
+  // active: boolean;
 }
