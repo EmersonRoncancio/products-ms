@@ -1,7 +1,13 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaClient } from '@prisma/client';
+import { PaginationDto } from 'src/common/common/dto/pagination.dto';
 
 @Injectable()
 export class ProductsService extends PrismaClient implements OnModuleInit {
@@ -19,19 +25,53 @@ export class ProductsService extends PrismaClient implements OnModuleInit {
     return data;
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll(paginationDto: PaginationDto) {
+    console.log(paginationDto);
+    const data = await this.product.findMany({
+      skip: (paginationDto.page - 1) * paginationDto.limit,
+      take: paginationDto.limit,
+    });
+    console.log(data);
+    return {
+      page: paginationDto.page,
+      limit: paginationDto.limit,
+      products: data,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: number) {
+    const data = await this.product.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    if (!data) throw new NotFoundException(`Product with id ${id} not found`);
+
+    return data;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: number, updateProductDto: UpdateProductDto) {
+    await this.findOne(id);
+
+    console.log(updateProductDto);
+    const data = await this.product.update({
+      where: {
+        id: id,
+      },
+      data: updateProductDto,
+    });
+    console.log(data);
+    return data;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: number) {
+    await this.findOne(id);
+
+    const data = await this.product.delete({
+      where: {
+        id: id,
+      },
+    });
+    return data;
   }
 }
